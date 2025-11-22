@@ -4613,6 +4613,40 @@ class ExportSkelHKX(skeleton_hkx.ExportSkel):
         return status
 
 
+class PYNIFLY_PT_collision_panel(bpy.types.Panel):
+  """PyNifly collision tools panel."""
+
+  bl_label = "PyNifly"
+  bl_idname = "PYNIFLY_PT_collision"
+  bl_space_type = 'VIEW_3D'
+  bl_region_type = 'UI'
+  bl_category = 'PyNifly'
+
+  def draw(self, context):
+    layout = self.layout
+    layout.label(text="Havok Collision")
+    layout.operator(GenerateHavokCollision.bl_idname,
+                    text="Generate Havok Collision")
+
+
+class GenerateHavokCollision(bpy.types.Operator):
+  """Generate Havok collision properties and apply shapes."""
+
+  bl_idname = "object.generate_havok_collision"
+  bl_label = "Generate Havok Collision"
+  bl_options = {'REGISTER', 'UNDO'}
+
+  def execute(self, context):
+    from . import havokgen
+    generator = havokgen.HavokCollisionGenerator()
+    generator.run_smart_detect()
+    return {'FINISHED'}
+
+  @classmethod
+  def poll(cls, context):
+    return context.active_object is not None
+
+
 def nifly_menu_import_nif(self, context):
     self.layout.operator(ImportNIF.bl_idname, text="Nif file with pyNifly (.nif)")
 
@@ -4659,6 +4693,12 @@ def unregister():
         with suppress(RuntimeError):
             bpy.utils.unregister_class(c)
 
+    with suppress(RuntimeError):
+        bpy.utils.unregister_class(GenerateHavokCollision)
+
+    with suppress(RuntimeError):
+        bpy.utils.unregister_class(PYNIFLY_PT_collision_panel)
+
     skeleton_hkx.unregister()
     controller.unregister()
 
@@ -4690,6 +4730,17 @@ def register():
                 bpy.types.TOPBAR_MT_file_export.append(f)
         except:
             pass
+
+    try:
+        bpy.utils.register_class(GenerateHavokCollision)
+    except:
+        pass
+
+    try:
+        bpy.utils.register_class(PYNIFLY_PT_collision_panel)
+    except:
+        pass
+
     skeleton_hkx.register()
     controller.register()
 
